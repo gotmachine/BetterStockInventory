@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.props" Condition="Exists('..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Condition="Exists('$(SolutionDir)\KSPDevPath.xml')" Project="$(SolutionDir)\KSPDevPath.xml" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BEA1CC65-408E-4819-B725-5FF32E01D939}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BetterStockInventory</RootNamespace>
+    <AssemblyName>BetterStockInventory</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <PlatformTarget>x64</PlatformTarget>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(KSPInstallPath)\KSP_x64_Dbg.exe</StartProgram>
+    <StartWorkingDirectory>$(KSPInstallPath)</StartWorkingDirectory>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>portable</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="$(KSPInstallPath)\KSP_x64_Data\Managed\UnityEngine*.dll">
+      <Name>UnityEngine</Name>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(KSPInstallPath)\KSP_x64_Data\Managed\Assembly-CSharp.dll">
+      <Name>Assembly-CSharp</Name>
+      <Private>False</Private>
+    </Reference>
+    <Publicize Include="Assembly-CSharp" />
+    <Reference Include="$(KSPInstallPath)\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll">
+      <Name>Assembly-CSharp-firstpass</Name>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(ProjectDir)\lib\0Harmony.dll">
+      <Name>Harmony</Name>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BetterCargoPartVolume.cs" />
+    <Compile Include="BetterCargoTooltip.cs" />
+    <Compile Include="Lib.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="AllowNestedInventoryPart.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnlimitedInventorySlots.cs" />
+    <Compile Include="UnlimitedInventorySlotsUI.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BetterStockInventoryAPI\BetterStockInventoryAPI.csproj">
+      <Project>{c457c38b-43f2-4266-ba54-aa5d0036ba14}</Project>
+      <Name>BetterStockInventoryAPI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Condition="Exists('$(SolutionDir)\ProjectSettings.xml')" Project="$(SolutionDir)\ProjectSettings.xml" />
+  <Target Name="BeforeCompile">
+    <UpdateAssemblyVersion versionMajor="$(VersionMajor)" versionMinor="$(VersionMinor)" versionPatch="$(versionPatch)" projectPath="$(ProjectDir)" />
+    <UpdateAVCVersionFile versionMajor="$(VersionMajor)" versionMinor="$(VersionMinor)" versionPatch="$(versionPatch)" versionFilePath="$(SolutionDir)\GameData\BetterStockInventory\BetterStockInventory.version" />
+  </Target>
+  <Target Name="AfterBuild">
+    <CallTarget Condition="'$(Configuration)'=='Debug'" Targets="CopyToKSP" />
+    <CallTarget Condition="'$(Configuration)'=='Release'" Targets="MakeZipPackage" />
+  </Target>
+  <Target Name="CopyToKSP">
+    <ItemGroup>
+      <GameDataFiles Include="$(SolutionDir)\GameData\BetterStockInventory\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(GameDataFiles)" DestinationFolder="$(KSPInstallPath)\GameData\BetterStockInventory\" />
+    <Copy SourceFiles="$(TargetDir)\BetterStockInventory.dll" DestinationFolder="$(KSPInstallPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\BetterStockInventory.pdb" DestinationFolder="$(KSPInstallPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\0_BetterStockInventoryAPI.dll" DestinationFolder="$(KSPInstallPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\0_BetterStockInventoryAPI.pdb" DestinationFolder="$(KSPInstallPath)\GameData\BetterStockInventory\Plugins\" />
+  </Target>
+  <Target Name="MakeZipPackage">
+    <PropertyGroup>
+      <PublishFolder>$(SolutionDir)\Releases\</PublishFolder>
+      <PublishTempFolderPath>$(PublishFolder)\Latest\</PublishTempFolderPath>
+    </PropertyGroup>
+    <RemoveDir Condition="Exists('$(PublishTempFolderPath)')" Directories="$(PublishTempFolderPath)" />
+    <ItemGroup>
+      <GameDataFiles Include="$(SolutionDir)\GameData\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(GameDataFiles)" DestinationFolder="$(PublishTempFolderPath)\GameData\%(RecursiveDir)" />
+    <Copy SourceFiles="$(TargetDir)\BetterStockInventory.dll" DestinationFolder="$(PublishTempFolderPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\BetterStockInventory.pdb" DestinationFolder="$(PublishTempFolderPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\0_BetterStockInventoryAPI.dll" DestinationFolder="$(PublishTempFolderPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(TargetDir)\0_BetterStockInventoryAPI.pdb" DestinationFolder="$(PublishTempFolderPath)\GameData\BetterStockInventory\Plugins\" />
+    <Copy SourceFiles="$(SolutionDir)\README.md" DestinationFolder="$(PublishTempFolderPath)\GameData\BetterStockInventory\" />
+    <ZipDirectory SourceDirectory="$(PublishTempFolderPath)" DestinationFile="$(PublishFolder)\latest.zip" Overwrite="true" />
+  </Target>
+  <UsingTask TaskName="UpdateAssemblyVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <versionMajor ParameterType="System.String" Required="true" />
+      <versionMinor ParameterType="System.String" Required="true" />
+      <versionPatch ParameterType="System.String" Required="true" />
+      <projectPath ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+            string assemblyInfoPath = Path.Combine(projectPath, "Properties", "AssemblyInfo.cs").ToString();
+            string[] assemblyInfo = File.ReadAllLines(assemblyInfoPath);
+            string newVersionInfo = "[assembly: AssemblyVersion(\"" + versionMajor + "." + versionMinor + "." + versionPatch + ".0\")]";
+            string newFileVersionInfo = "[assembly: AssemblyFileVersion(\"" + versionMajor + "." + versionMinor + "." + versionPatch + ".0\")]";
+
+            bool hasChanged = false;
+
+            for (int i = 0; i < assemblyInfo.Length; i++)
+            {
+                if (Regex.IsMatch(assemblyInfo[i], @"^\[ *assembly *: *AssemblyVersion.*?\]"))
+                {
+                    if (assemblyInfo[i] != newVersionInfo)
+                        hasChanged = true;
+
+                    assemblyInfo[i] = newVersionInfo;
+                }
+
+                if (Regex.IsMatch(assemblyInfo[i], @"^\[ *assembly *: *AssemblyFileVersion.*?\]"))
+                    assemblyInfo[i] = newFileVersionInfo;
+            }
+
+            if (hasChanged)
+                File.WriteAllLines(assemblyInfoPath, assemblyInfo, Encoding.UTF8);
+           ]]></Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="UpdateAVCVersionFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <versionMajor ParameterType="System.String" Required="true" />
+      <versionMinor ParameterType="System.String" Required="true" />
+      <versionPatch ParameterType="System.String" Required="true" />
+      <versionFilePath ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+            string[] versionInfo = File.ReadAllLines(versionFilePath);
+            string newVersionInfo = "  \"VERSION\": {{\"MAJOR\": " + versionMajor + ", \"MINOR\": " + versionMinor + ", \"PATCH\": " + versionPatch + ", \"BUILD\": 0}},";
+
+            bool write = false;
+
+            for (int i = 0; i < versionInfo.Length; i++)
+            {
+                if (versionInfo[i].Contains("\"VERSION\":"))
+                {
+                    if (versionInfo[i] != newVersionInfo)
+                        write = true;
+
+                    versionInfo[i] = newVersionInfo;
+                    break;
+                }
+            }
+
+            if (write)
+                File.WriteAllLines(versionFilePath, versionInfo, Encoding.UTF8);
+           ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.props'))" />
+    <Error Condition="!Exists('..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.targets'))" />
+  </Target>
+  <Import Project="..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.targets" Condition="Exists('..\packages\Krafs.Publicizer.1.0.2\build\Krafs.Publicizer.targets')" />
+</Project>
